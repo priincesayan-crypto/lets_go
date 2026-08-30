@@ -5,12 +5,14 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -22,13 +24,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.touf.letsgo.LetsGoApplication
+import com.touf.letsgo.R
 import java.io.File
 import java.io.FileOutputStream
 
@@ -46,7 +52,6 @@ fun PersonEditScreen(
 ) {
     val context = LocalContext.current
 
-    // État pour afficher ou masquer la boîte de dialogue de confirmation
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -61,30 +66,66 @@ fun PersonEditScreen(
         }
     )
 
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedTextColor = Color.Black,
+        unfocusedTextColor = Color.Black,
+        focusedLabelColor = Color(0xFFFF007F), // Fushia actif
+        unfocusedLabelColor = Color.DarkGray,   // Gris foncé au repos
+        focusedBorderColor = Color(0xFFFF007F),
+        unfocusedBorderColor = Color.Gray
+    )
+
     Scaffold(
+        containerColor = Color.White,
         topBar = {
             TopAppBar(
-                title = { Text(if (personId == -1L) "Nouveau contact" else "Modifier la fiche") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                ),
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_launcher),
+                            contentDescription = "Logo Let's Go !",
+                            modifier = Modifier.size(36.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = if (personId == -1L) "Nouveau contact" else "Modifier la fiche",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Retour",
+                            tint = Color.White
+                        )
+                    }
+                },
                 actions = {
-                    // On affiche la corbeille uniquement s'il s'agit d'un contact existant
                     if (personId != -1L) {
                         IconButton(onClick = { showDeleteDialog = true }) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = "Supprimer le contact"
+                                contentDescription = "Supprimer le contact",
+                                tint = Color.White
                             )
                         }
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFFF007F) // Fushia
+                )
             )
         }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Color.White)
                 .padding(paddingValues)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -123,7 +164,7 @@ fun PersonEditScreen(
             Text(
                 text = "Appuyez pour changer la photo",
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color.DarkGray
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -132,7 +173,8 @@ fun PersonEditScreen(
                 value = viewModel.name,
                 onValueChange = { viewModel.name = it },
                 label = { Text("Nom") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = textFieldColors
             )
 
             OutlinedTextField(
@@ -140,14 +182,16 @@ fun PersonEditScreen(
                 onValueChange = { viewModel.phone = it },
                 label = { Text("Téléphone") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = textFieldColors
             )
 
             OutlinedTextField(
                 value = viewModel.address,
                 onValueChange = { viewModel.address = it },
                 label = { Text("Adresse") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = textFieldColors
             )
 
             Spacer(modifier = Modifier.weight(1f))
@@ -171,7 +215,6 @@ fun PersonEditScreen(
             }
         }
 
-        // Boîte de dialogue de confirmation de suppression
         if (showDeleteDialog) {
             AlertDialog(
                 onDismissRequest = { showDeleteDialog = false },

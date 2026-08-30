@@ -3,6 +3,7 @@ package com.touf.letsgo.presentation.home
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,12 +25,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.touf.letsgo.LetsGoApplication
+import com.touf.letsgo.R
 import com.touf.letsgo.domain.model.Person
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,25 +50,40 @@ fun HomeScreen(
     val context = LocalContext.current
     val quickAccess by viewModel.quickAccessPersons.collectAsState()
 
-    // NOUVEAU : plus de réglage manuel. La grille s'ajuste toute seule :
-    // toujours au moins 6 cases au total, et toujours exactement une case vide
-    // "+" juste après le dernier contact rempli, quel que soit leur nombre.
     val totalSlots = maxOf(quickAccess.size + 1, 6)
 
     Scaffold(
+        containerColor = Color.White,
         topBar = {
             TopAppBar(
-                title = { Text("Let's Go") },
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_launcher),
+                            contentDescription = "Logo Let's Go !",
+                            modifier = Modifier.size(36.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "Let's Go !",
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                },
                 actions = {
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = "Paramètres"
+                            contentDescription = "Paramètres",
+                            tint = Color.White
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                    containerColor = Color(0xFFFF007F) // Fushia
                 )
             )
         }
@@ -73,6 +91,7 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Color.White)
                 .padding(paddingValues)
         ) {
             LazyVerticalGrid(

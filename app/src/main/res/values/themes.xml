@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Thème de base utilisant le système natif Android -->
+    <style name="Theme.LetsGo" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/white</item>
+        <item name="android:navigationBarColor">@android:color/white</item>
+    </style>
 
-    <style name="Theme.LetsGo" parent="android:Theme.Material.Light.NoActionBar" />
+    <!-- Thème pour l'écran de démarrage (Splash) -->
+    <style name="Theme.LetsGo.Splash" parent="Theme.LetsGo">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+    </style>
 </resources>
