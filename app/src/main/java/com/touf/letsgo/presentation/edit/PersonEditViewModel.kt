@@ -21,57 +21,89 @@ class PersonEditViewModel(
     var name by mutableStateOf("")
     var phone by mutableStateOf("")
     var address by mutableStateOf("")
+    var photoUri by mutableStateOf<String?>(null)
 
-    private var loadedPerson: Person? = null
+    private var existingPerson: Person? = null
 
     init {
-        viewModelScope.launch {
-            // Récupère la personne par son ID lors de l'ouverture de l'écran
-            loadedPerson = repository.getPersonFlow(personId).firstOrNull()
-            loadedPerson?.let {
-                name = it.name
-                // On récupère le premier numéro et la première adresse de la liste
-                phone = it.phoneNumbers.firstOrNull()?.rawNumber ?: ""
-                address = it.addresses.firstOrNull()?.rawAddress ?: ""
+        if (personId != -1L) {
+            viewModelScope.launch {
+                existingPerson = repository.getPersonFlow(personId).firstOrNull()
+                existingPerson?.let {
+                    name = it.name
+                    phone = it.primaryPhoneNumber?.rawNumber ?: ""
+                    address = it.primaryAddress?.rawAddress ?: ""
+                    photoUri = it.photoUri
+                }
             }
         }
     }
 
     fun save(onSaved: () -> Unit) {
+        if (name.isBlank()) return
+
         viewModelScope.launch {
-            val currentPerson = loadedPerson ?: return@launch
+            val timestamp = System.currentTimeMillis()
 
-            // Mise à jour du nom
-            val updatedPerson = currentPerson.copy(
-                name = name,
-                updatedAt = System.currentTimeMillis()
-            )
+            val phoneNumbersList = if (phone.isNotBlank()) {
+                val phoneId = existingPerson?.primaryPhoneNumber?.id ?: 0L
+                val phoneLabel = existingPerson?.primaryPhoneNumber?.label
+                listOf(PhoneNumber(id = phoneId, rawNumber = phone.trim(), label = phoneLabel, isPrimary = true))
+            } else emptyList()
 
-            // Mise à jour du téléphone
-            val updatedPhones = listOf(
-                PhoneNumber(
-                    id = currentPerson.phoneNumbers.firstOrNull()?.id ?: 0,
-                    rawNumber = phone,
-                    label = "Mobile",
-                    isPrimary = true
+            val addressesList = if (address.isNotBlank()) {
+                val addrId = existingPerson?.primaryAddress?.id ?: 0L
+                val addrLabel = existingPerson?.primaryAddress?.label
+                listOf(Address(id = addrId, rawAddress = address.trim(), label = addrLabel, isPrimary = true))
+            } else emptyList()
+
+            val personToSave = if (personId == -1L) {
+                // On récupère la liste actuelle pour placer le nouveau contact tout à la fin
+                val currentList = repository.getQuickAccessPersons().firstOrNull() ?: emptyList()
+                val nextPosition = currentList.size
+
+                Person(
+                    id = 0L,
+                    name = name.trim(),
+                    photoUri = photoUri,
+                    notes = null,
+                    isQuickAccess = true,
+                    quickAccessPosition = nextPosition,
+                    searchableName = name.trim().lowercase(),
+                    phoneNumbers = phoneNumbersList,
+                    addresses = addressesList,
+                    createdAt = timestamp,
+                    updatedAt = timestamp
                 )
+            } else {
+                existingPerson?.copy(
+                    name = name.trim(),
+                    photoUri = photoUri,
+                    searchableName = name.trim().lowercase(),
+                    phoneNumbers = phoneNumbersList,
+                    addresses = addressesList,
+                    updatedAt = timestamp
+                ) ?: return@launch
+            }
+
+            repository.upsertPerson(
+                person = personToSave,
+                phoneNumbers = phoneNumbersList,
+                addresses = addressesList
             )
 
-            // Mise à jour de l'adresse
-            val updatedAddresses = listOf(
-                Address(
-                    id = currentPerson.addresses.firstOrNull()?.id ?: 0,
-                    rawAddress = address,
-                    label = "Domicile",
-                    isPrimary = true
-                )
-            )
-
-            // Sauvegarde dans la base de données via le Repository
-            repository.upsertPerson(updatedPerson, updatedPhones, updatedAddresses)
-
-            // Indique à l'interface que c'est fini pour revenir à l'accueil
             onSaved()
+        }
+    }
+
+    fun delete(onDeleted: () -> Unit) {
+        if (personId != -1L) {
+            viewModelScope.launch {
+                repository.deletePerson(personId)
+                onDeleted()
+            }
+        } else {
+            onDeleted()
         }
     }
 }

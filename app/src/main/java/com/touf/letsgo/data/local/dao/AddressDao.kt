@@ -16,6 +16,11 @@ interface AddressDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAddresses(addresses: List<AddressEntity>)
 
+    // NOUVEAU : indispensable avant de réinsérer, sinon les anciennes adresses
+    // restent en base même quand elles ne sont plus dans la fiche modifiée.
+    @Query("DELETE FROM addresses WHERE personId = :personId")
+    suspend fun deleteAllForPerson(personId: Long)
+
     @Query("UPDATE addresses SET isPrimary = 0 WHERE personId = :personId")
     suspend fun clearPrimaryForPerson(personId: Long)
 

@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PersonDao {
-    // --- ANCIENNES MÉTHODES (Conservées pour ne rien casser) ---
     @Query("SELECT * FROM person ORDER BY name COLLATE NOCASE")
     fun getAll(): Flow<List<PersonEntity>>
 
@@ -35,7 +34,6 @@ interface PersonDao {
     @Query("SELECT * FROM person WHERE searchableName LIKE '%' || :query || '%'")
     fun search(query: String): Flow<List<PersonEntity>>
 
-    // --- NOUVELLES MÉTHODES (Charge la personne + Adresses + Téléphones) ---
     @Transaction
     @Query("SELECT * FROM person ORDER BY name COLLATE NOCASE")
     fun getAllWithDetails(): Flow<List<PersonWithDetails>>

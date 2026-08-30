@@ -16,6 +16,11 @@ interface PhoneNumberDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPhones(phones: List<PhoneNumberEntity>)
 
+    // NOUVEAU : indispensable avant de réinsérer, sinon les anciens numéros
+    // restent en base même quand ils ne sont plus dans la fiche modifiée.
+    @Query("DELETE FROM phone_numbers WHERE personId = :personId")
+    suspend fun deleteAllForPerson(personId: Long)
+
     @Query("UPDATE phone_numbers SET isPrimary = 0 WHERE personId = :personId")
     suspend fun clearPrimaryForPerson(personId: Long)
 

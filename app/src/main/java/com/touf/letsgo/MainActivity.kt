@@ -20,6 +20,7 @@ import com.touf.letsgo.domain.model.Person
 import com.touf.letsgo.domain.model.PhoneNumber
 import com.touf.letsgo.presentation.edit.PersonEditScreen
 import com.touf.letsgo.presentation.home.HomeScreen
+import com.touf.letsgo.presentation.settings.SettingsScreen
 import com.touf.letsgo.ui.theme.LetsGoTheme
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -83,11 +84,14 @@ class MainActivity : ComponentActivity() {
                             HomeScreen(
                                 onNavigateToEdit = { personId ->
                                     navController.navigate("edit/$personId")
+                                },
+                                onNavigateToSettings = {
+                                    navController.navigate("settings")
                                 }
                             )
                         }
 
-                        // Écran 2 : Formulaire de modification
+                        // Écran 2 : Formulaire de modification d'une fiche
                         composable(
                             route = "edit/{personId}",
                             arguments = listOf(navArgument("personId") { type = NavType.LongType })
@@ -96,6 +100,13 @@ class MainActivity : ComponentActivity() {
                             PersonEditScreen(
                                 personId = personId,
                                 onNavigateBack = { navController.popBackStack() } // Retour en arrière après sauvegarde
+                            )
+                        }
+
+                        // Écran 3 : Paramètres (Adresses Home/Work)
+                        composable("settings") {
+                            SettingsScreen(
+                                onNavigateBack = { navController.popBackStack() }
                             )
                         }
                     }

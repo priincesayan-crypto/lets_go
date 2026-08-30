@@ -17,6 +17,15 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    applicationVariants.all {
+        val variant = this
+        outputs.all {
+            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            val apkName = "LetsGo !.apk"
+            output.outputFileName = apkName
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -41,8 +50,6 @@ android {
     }
 
     composeOptions {
-        // CORRIGÉ : 1.5.14 est la version du Compose Compiler compatible avec Kotlin 1.9.24
-        // (1.5.8 correspondait à Kotlin 1.9.22, d'où l'erreur de compilation)
         kotlinCompilerExtensionVersion = "1.5.14"
     }
 }
@@ -56,7 +63,6 @@ dependencies {
 
     implementation("androidx.activity:activity-compose:1.9.0")
     implementation("androidx.core:core-ktx:1.13.1")
-    // HARMONISÉ : 2.8.4 partout dans le lifecycle, au lieu de mélanger 2.8.0 et 2.8.4
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
     implementation("androidx.navigation:navigation-compose:2.7.7")
@@ -81,5 +87,4 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     implementation("io.coil-kt:coil-compose:2.7.0")
-    implementation("androidx.navigation:navigation-compose:2.7.7")
 }

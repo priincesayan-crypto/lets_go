@@ -38,7 +38,6 @@ class PersonRepository(
         }
     }
 
-    // Transforme la relation Room en un objet Person complet avec ses listes
     private fun PersonWithDetails.toDomainComplete(): Person {
         val base = person.toDomain()
         return base.copy(
@@ -125,5 +124,17 @@ class PersonRepository(
 
     suspend fun deletePerson(personId: Long) {
         personDao.deleteById(personId)
+    }
+
+    suspend fun removeFromQuickAccess(personId: Long) {
+        val personEntity = personDao.getById(personId)
+        personEntity?.let {
+            val updated = it.copy(
+                isQuickAccess = false,
+                quickAccessPosition = null,
+                updatedAt = System.currentTimeMillis()
+            )
+            personDao.update(updated)
+        }
     }
 }
