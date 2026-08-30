@@ -7,6 +7,7 @@ data class Person(
     val notes: String?,
     val isQuickAccess: Boolean,
     val quickAccessPosition: Int?,
+    val searchableName: String,
     val phoneNumbers: List<PhoneNumber> = emptyList(),
     val addresses: List<Address> = emptyList(),
     val createdAt: Long,

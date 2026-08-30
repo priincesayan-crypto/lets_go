@@ -1,40 +1,30 @@
 package com.touf.letsgo.data.local.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
 import com.touf.letsgo.data.local.entity.PhoneNumberEntity
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PhoneNumberDao {
-    // Récupère tous les numéros d'une personne
-    @Query("SELECT * FROM phone_number WHERE personId = :personId")
-    fun getByPersonId(personId: Long): Flow<List<PhoneNumberEntity>>
 
-    // Récupère le numéro principal d'une personne (un seul, car isPrimary = 1)
-    @Query("SELECT * FROM phone_number WHERE personId = :personId AND isPrimary = 1 LIMIT 1")
-    suspend fun getPrimaryByPersonId(personId: Long): PhoneNumberEntity?
+    @Query("SELECT * FROM phone_numbers WHERE personId = :personId")
+    suspend fun getPhonesForPerson(personId: Long): List<PhoneNumberEntity>
 
-    // Récupère un numéro par son ID
-    @Query("SELECT * FROM phone_number WHERE id = :id")
-    suspend fun getById(id: Long): PhoneNumberEntity?
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPhones(phones: List<PhoneNumberEntity>)
 
-    // Insère un numéro
-    @Insert
-    suspend fun insert(phoneNumber: PhoneNumberEntity): Long
-
-    // Met à jour un numéro
-    @Update
-    suspend fun update(phoneNumber: PhoneNumberEntity)
-
-    // Supprime un numéro
-    @Delete
-    suspend fun delete(phoneNumber: PhoneNumberEntity)
-
-    // Désactive le principal pour une personne (passe tous les isPrimary à 0)
-    @Query("UPDATE phone_number SET isPrimary = 0 WHERE personId = :personId")
+    @Query("UPDATE phone_numbers SET isPrimary = 0 WHERE personId = :personId")
     suspend fun clearPrimaryForPerson(personId: Long)
 
-    // Supprime tous les numéros d'une personne (utilisé lors de la suppression de la personne)
-    @Query("DELETE FROM phone_number WHERE personId = :personId")
-    suspend fun deleteAllForPerson(personId: Long)
+    @Query("UPDATE phone_numbers SET isPrimary = 1 WHERE id = :phoneId")
+    suspend fun setPrimaryPhoneDirect(phoneId: Long)
+
+    @Transaction
+    suspend fun setPrimaryPhone(personId: Long, phoneId: Long) {
+        clearPrimaryForPerson(personId)
+        setPrimaryPhoneDirect(phoneId)
+    }
 }

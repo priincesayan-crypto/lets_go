@@ -14,11 +14,10 @@ import com.touf.letsgo.data.local.entity.*
         AddressEntity::class,
         AppSettingsEntity::class
     ],
-    version = 1,
-    exportSchema = false // met true si tu veux exporter le schéma pour les migrations
+    version = 2,
+    exportSchema = false
 )
 abstract class LetsGoDatabase : RoomDatabase() {
-    // Chaque DAO est accessible via une propriété abstraite
     abstract fun personDao(): PersonDao
     abstract fun phoneNumberDao(): PhoneNumberDao
     abstract fun addressDao(): AddressDao
@@ -33,8 +32,10 @@ abstract class LetsGoDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     LetsGoDatabase::class.java,
-                    "letsgo.db" // nom du fichier de la base de données
-                ).build()
+                    "letsgo.db"
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }
